@@ -49,7 +49,7 @@
         3. (optional) ["class": the class of this object]
 3. "size_loc_i": Contains size and location info.
     * We are deciding on the "left", "top", etc. values
-    1. "values_type": ["fractions", "fixed"]
+    1. "values_type": "fractions" | "fixed" (one of those two)
         this property indicates if the 
         following properties within this section
         are fractional or fixed. So for example,
