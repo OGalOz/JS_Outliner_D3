@@ -4,7 +4,7 @@
 
 
 
-function LUaddBasicLayout(DOM_object, basic_layout_d) {
+function lUaddBasicLayout(DOM_object, basic_layout_d) {
 /*
  *  This function takes an existing DOM object with a parent
  *      DOM object and defines its foundational layout
@@ -60,13 +60,13 @@ function LUaddBasicLayout(DOM_object, basic_layout_d) {
         throw "value type must be either 'fractions' or 'fixed'"
     }
 
-    LUAddLayoutSizeLocToDOMObj(DOM_object, lft, tp, ht, wd);
+    lUAddLayoutSizeLocToDOMObj(DOM_object, lft, tp, ht, wd);
 
     return DOM_object
 
 }
 
-function LUAddLayoutSizeLocToDOMObj(DOM_obj, lft, tp, ht, wd) {
+function lUAddLayoutSizeLocToDOMObj(DOM_obj, lft, tp, ht, wd) {
     if (!(lft === null)) {
         DOM_obj.style.left = lft.toString() + "px";
     }
@@ -83,7 +83,7 @@ function LUAddLayoutSizeLocToDOMObj(DOM_obj, lft, tp, ht, wd) {
 
 
 
-function LUAddStyleToDOMObj(DOM_obj, style_d) {
+function lUAddStyleToDOMObj(DOM_obj, style_d) {
     // For each key in style_d object
     // we add that style to the DomObject
     style_vals = Object.keys(style_d);
@@ -95,7 +95,7 @@ function LUAddStyleToDOMObj(DOM_obj, style_d) {
 }
 
 
-function LUAddPropertiesToDOMObj(DOM_obj, property_d) {
+function lUAddPropertiesToDOMObj(DOM_obj, property_d) {
 
         // For each key in property_d object
         //
@@ -120,13 +120,13 @@ function LUAddPropertiesToDOMObj(DOM_obj, property_d) {
 }
 
 
-function LUAddElementToParent(DOM_obj, parent_id) {
+function lUAddElementToParent(DOM_obj, parent_id) {
 
     prnt_dobj = document.getElementById("#" + parent_id)
     prnt_dobj.appendChild(DOM_obj);
 }
 
-function LUCreateElementFromInfo(inp_obj) {
+function lUCreateElementFromInfo(inp_obj) {
     /*
      *
      * Args:
@@ -166,15 +166,15 @@ function LUCreateElementFromInfo(inp_obj) {
 
 
         parent_DOM_elem.appendChild(current_DOM_elem);
-        LUaddBasicLayout(current_DOM_elem, inp_obj["size_loc_i"]);
-        LUAddStyleToDOMObj(current_DOM_elem, inp_obj["style_i"]);
+        lUaddBasicLayout(current_DOM_elem, inp_obj["size_loc_i"]);
+        lUAddStyleToDOMObj(current_DOM_elem, inp_obj["style_i"]);
         if ("unq_prp" in inp_obj) {
-            LUAddPropertiesToDOMObj(current_DOM_elem, inp_obj["unq_prp"])
+            lUAddPropertiesToDOMObj(current_DOM_elem, inp_obj["unq_prp"])
         }
     } else {
         // this is an SVG element
         // height and width are 100%
-        current_DOM_elem = Create_d3_SVG_in_parent(
+        current_DOM_elem = create_d3_SVG_in_parent(
                         parent_id, id_i["id"], 
                         border=inp_obj["style_i"]["border"],
                         position=inp_obj["style_i"]["position"])
@@ -184,7 +184,7 @@ function LUCreateElementFromInfo(inp_obj) {
 
 }
 
-function CheckFracValues(basic_layout_d) {
+function checkFracValues(basic_layout_d) {
  /* In this function we check if the values in the layout dict are indeed
   * fractions (between 0 and 1) 
  *      basic_layout_d is an object with the following keys:
@@ -236,7 +236,7 @@ function prepInt(inp_i) {
 }
 
 
-function FracToPrcString(flt) {
+function fracToPrcString(flt) {
     // flt is a fraction to be turned into percent and cut short to 3 decimals
     // returns string
     if (flt <= 1.01 && flt > -0.01) {
@@ -269,7 +269,7 @@ function FracToPrcString(flt) {
 }
 
 
-function Create_d3_SVG_in_parent(parent_id, id, 
+function create_d3_SVG_in_parent(parent_id, id, 
                         border = null, position = null,
                         width = "100%", height = "100%") {
     // All args are str    
@@ -297,7 +297,7 @@ function Create_d3_SVG_in_parent(parent_id, id,
 }
 
 
-function CreateEntireShellFromShellDataObject(shell_data_obj) {
+function createEntireShellFromShellDataObject(shell_data_obj) {
     // We make all objects inside Shell Data Object
     // shell_data_obj must contain key "lyt_vls"
     // which has only objects that follow the rules
@@ -312,7 +312,7 @@ function CreateEntireShellFromShellDataObject(shell_data_obj) {
     } else {
         subwindow_keys = Object.keys(lyt_vls)
         for (let k=0; k < subwindow_keys.length; k++) {
-            LUCreateElementFromInfo(lyt_vls[subwindow_keys[k]])
+            lUCreateElementFromInfo(lyt_vls[subwindow_keys[k]])
         }
     }
 
@@ -325,7 +325,7 @@ function get_SVG(svg_id) {
         return svg_d3
 }
 
-function ClearSVG(svg_id) {
+function clearSVG(svg_id) {
         svg_d3 = get_SVG(svg_id)
         svg_d3.selectAll("*").remove();
 }

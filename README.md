@@ -81,7 +81,7 @@
 
 ### LayoutUtil.js file explained:
     * Functions:
-    1. CreateEntireShellFromShellDataObject(shell_data_obj)
+    1. createEntireShellFromShellDataObject(shell_data_obj)
             This function can be used to check if your shell
             data object was written correctly. Run this and
             your objects should populate the entire parent
@@ -89,34 +89,34 @@
             refer to an existing dobj. Each parent id
             must exist before the object is created. Remember
             the shell_data_obj has to have the property "lyt_vls".
-    2. LUaddBasicLayout(DOM_object, basic_layout_d)
+    2. lUaddBasicLayout(DOM_object, basic_layout_d)
             computes and sends correct left, top, height, width 
-            to LUAddLayoutSizeLocToDOMObj
-    3. LUAddLayoutSizeLocToDOMObj(DOM_obj, lft, tp, ht, wd)
+            to lUAddLayoutSizeLocToDOMObj
+    3. lUAddLayoutSizeLocToDOMObj(DOM_obj, lft, tp, ht, wd)
         Takes left, top, height, and width number values
             and turns it into string for DOM and adds to dobj.
-    4. LUAddStyleToDOMObj(DOM_obj, style_d)
+    4. lUAddStyleToDOMObj(DOM_obj, style_d)
         For every style property in style_d, it adds it's value
             to the dobj.
-    5. LUAddPropertiesToDOMObj(DOM_obj, property_d)
+    5. lUAddPropertiesToDOMObj(DOM_obj, property_d)
         This technically adds attributes to the dobj
-    6. LUAddElementToParent(DOM_obj, parent_id)
+    6. lUAddElementToParent(DOM_obj, parent_id)
         This adds an element to its parent
-    7. LUCreateElementFromInfo(inp_obj)
+    7. lUCreateElementFromInfo(inp_obj)
         This takes an object with all the essential
             sub objects listed above ( "tag_type",
             "id_i", "size_loc_i", "style_i", "unq_prp")
             and generates a dobj with all the relevant info.
-    8. CheckFracValues(basic_layout_d)
+    8. checkFracValues(basic_layout_d)
         If we use "fractions" instead of "fixed", we check
             that the fractions are properly indicated.
     9. prepInt(inp_i)
         inp_i is an int or float with no decimal nonzero digits, 
         value will be converted into
         string and have commas: 1000000 -> '1,000,000'
-    10. FracToPrcString(flt)
+    10. fracToPrcString(flt)
         flt is a fraction to be turned into percent and cut short to 3 decimals
-    11. Create_d3_SVG_in_parent(parent_id, id, width, height, border=null, position=null)
+    11. create_d3_SVG_in_parent(parent_id, id, width, height, border=null, position=null)
         All params are str.  Note that we always want the SVG height and width to
         be 100% of the enclosing box in order to control its location
     12. get_SVG(svg_id)
