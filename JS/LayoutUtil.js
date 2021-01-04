@@ -24,7 +24,7 @@ function lUaddBasicLayout(DOM_object, basic_layout_d) {
     let ht = null;
     let wd = null;
     if (basic_layout_d["values_type"] === "fractions") {
-        CheckFracValues(basic_layout_d);
+        checkFracValues(basic_layout_d);
         let parent_DOM_elem = DOM_object.parentElement;
         if (!(parent_DOM_elem === undefined ||  parent_DOM_elem === null)) {
             // Note: we subtract 1 from height and width because of a seeming extension that occurs.

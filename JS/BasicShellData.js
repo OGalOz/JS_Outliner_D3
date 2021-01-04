@@ -119,6 +119,7 @@ window.BasicShellData = {
             "style_i": {
                 "position": "absolute",
                 "border": "2px solid gray",
+                "textAlign": "center"
             },
             "unq_prp": {
                 "innerHTML": "sidebar"
