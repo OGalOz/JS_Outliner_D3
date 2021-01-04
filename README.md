@@ -44,9 +44,9 @@
     * this is the HTML tag type of the subwindow.
 2. "id_i": Contains id info for dobj
     * this object contains a few properties:
-    1. "parent_id": The id of the parent DOM object
-    2. "id": The id 
-    3. (optional) ["class": the class of this object]
+        1. "parent_id": The id of the parent DOM object
+        2. "id": The id 
+        3. (optional) ["class": the class of this object]
 3. "size_loc_i": Contains size and location info.
     * We are deciding on the "left", "top", etc. values
     1. "values_type": ["fractions", "fixed"]
@@ -68,11 +68,13 @@
 4. "style_i": Contains style info.
     * Here you must make a mapping between style property
         and it's value, in the Javascript language. e.g.
-        ``` "border": "2px solid gray"
+        ```Javascript 
+        "border": "2px solid gray"
         ```
 5. "unq_prp": Contains tag attributes, 
     * match attribute to value in the object. e.g. 
-    ``` "innerHTML": "Hello World" 
+    ```Javascript
+    "innerHTML": "Hello World" 
     ```
 
 
