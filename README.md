@@ -9,13 +9,13 @@
     
 
 ## How?
-* In order to create a shell in a webpage, (i.e. A set of boxes
+* In order to create a viz-shell in a webpage, (i.e. A set of boxes
     that contain different information but are all in one
     large box) we use a specific data file, which is essentially
     a Javascript object that has a form described below. We
-    name this type of object "Shell_Data". It doesn't control
+    name this type of object "Viz_Shell_Data". It doesn't control
     the d3 visualization, but it does control
-    the general creation of a shell. When you create a "Shell_Data"
+    the general creation of a shell. When you create a "Viz_Shell_Data"
     object, you need to start by naming a parent id within the DOM
     that already exists. This could be the 'body' tag, or it could
     be an already created tag besides the body. Regardless, you must
@@ -28,7 +28,7 @@
 
 * Note: Throughout this text, dobj means DOM objects
 
-### Shell_Data:
+### Viz_Shell_Data:
  * Data files (JS objects) have the following form:
 1. A "window_shell" is a JS object which has
     a property "lyt_vls".
@@ -121,8 +121,18 @@
         All params are str.  Note that we always want the SVG height and width to
         be 100% of the enclosing box in order to control its location
 
-### SVG file
-    1. get_SVG(svg_id)
+### SVG Util file
+    1. getSVG(svg_id)
         returns d3 SVG object (may be unnecessary since it's easy to write)
-    2. clear_SVG(svg_id)
+    2. clearSVG(svg_id)
         clears the svg entirely
+    3. makeSVGAxesAndLabels(svg_id, svg_axes_info)
+        Creates the axes and the labels given
+            the information in svg_axes_info
+    4. makeYAxisLabel(d3svg, svgWidth, svgHeight, yt)
+        This (subfunction of makeSVGAxesAndLabels) 
+            creates the Y axis and rotates it 270 degrees.
+    5. makeLine(d3svg, color, x1, y1, x2, y2, stroke_width)
+        This creates a line
+    6. makeText(d3svg, font_weight, font_size, x, y, text_str)
+

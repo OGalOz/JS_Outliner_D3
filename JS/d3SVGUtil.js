@@ -61,11 +61,6 @@ function makeSVGAxesAndLabels(svg_id, svg_axes_info) {
    x_org = svg_axes_info["graph_i"]["blc"][0]*dWidth;
    y_org = svg_axes_info["graph_i"]["blc"][1]*dHeight;
 
-    console.log("x_org")
-    console.log(x_org)
-    console.log("y_org")
-    console.log(y_org)
-   
    //Making X axis line (no ticks)
    makeLine(d3svg, "black", x_org, y_org, x_org + x_axis_len, y_org, 
         x_i["x_axis_i"]["style_i"]["strokeWidth"]);
@@ -113,10 +108,10 @@ function makeYAxisLabel(d3svg, svgWidth, svgHeight, yt) {
 
 
 
-function makeLine(svg_obj, color, x1, y1, x2, y2, stroke_width ) {
+function makeLine(d3svg, color, x1, y1, x2, y2, stroke_width ) {
     /*
      * Args: 
-     *  svg_obj: A d3 svg object
+     *  d3svg: A d3 svg object
      *  color: str, like "black"
      *  x1 - y2, Numbers
      *  stroke_width: width of line, Number
@@ -124,7 +119,7 @@ function makeLine(svg_obj, color, x1, y1, x2, y2, stroke_width ) {
      * Note: We need to make sure the numbers are relatively close to integers
      */
 
-               return svg_obj.append('line')
+               return d3svg.append('line')
                    .attr('x1', x1.toFixed(2))
                    .attr('y1', y1.toFixed(2))
                    .attr('x2', x2.toFixed(2))
@@ -137,17 +132,17 @@ function makeLine(svg_obj, color, x1, y1, x2, y2, stroke_width ) {
 }
 
 
-function makeText(svg_obj, font_weight, font_size, x, y, text_str) {
+function makeText(d3svg, font_weight, font_size, x, y, text_str) {
     /*
      *  Args:
      *  
-     *      svg_obj: A d3 svg object
+     *      d3svg: A d3 svg object
      *      font_weight: (str) like "bold", "normal",
      *      font_size, x, y: Number
      *      text_str: (str) Text you want to make
      *
      */
-            svg_obj.append('text')
+            d3svg.append('text')
                 .attr('font-weight', font_weight)
                 .attr('font-size', font_size)
                 .attr('x', x)
