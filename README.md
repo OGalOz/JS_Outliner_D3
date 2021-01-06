@@ -4,6 +4,7 @@
 * The point of this program is to simplify creating visualizations
     in browsers, and to use d3-js more easily in that process.
 * This only helps to create an outline shell in a box-like format
+* Additional option of designing the axes and title for a graph
 
     
 
@@ -119,7 +120,9 @@
     11. create_d3_SVG_in_parent(parent_id, id, width, height, border=null, position=null)
         All params are str.  Note that we always want the SVG height and width to
         be 100% of the enclosing box in order to control its location
-    12. get_SVG(svg_id)
+
+### SVG file
+    1. get_SVG(svg_id)
         returns d3 SVG object (may be unnecessary since it's easy to write)
-    13. clear_SVG(svg_id)
+    2. clear_SVG(svg_id)
         clears the svg entirely

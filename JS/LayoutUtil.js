@@ -319,13 +319,4 @@ function createEntireShellFromShellDataObject(shell_data_obj) {
 
 }
 
-function get_SVG(svg_id) {
-        //svg_id is str
-        let svg_d3 = d3.select("#" + svg_id);
-        return svg_d3
-}
 
-function clearSVG(svg_id) {
-        svg_d3 = get_SVG(svg_id)
-        svg_d3.selectAll("*").remove();
-}
