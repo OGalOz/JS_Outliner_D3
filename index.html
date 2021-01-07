@@ -11,6 +11,9 @@
     <script src="JS/BasicVizShellData.js"></script>
     <!-- The Graph Data --!>
     <script src="JS/BasicGraphData.js"></script>
+    <!-- The Tick Data --!>
+    <script src="JS/BasicAxisTicks.js"></script>
+
 
     <style>
         html, 
@@ -25,7 +28,15 @@
         
         createEntireShellFromShellDataObject(BasicShellData);
 
-        makeSVGAxesAndLabels("graph-svg", SVGGraphAxes)
+        let res_info = makeSVGAxesAndLabels("graph-svg", SVGGraphAxes);
+
+        let x_axis_start_loc = res_info["x_axis_start"];
+        let x_axis_end = [x_axis_start_loc[0] + res_info["x_axis_len"],
+                        x_axis_start_loc[1]]
+
+        makeAxisTicksAndTickLabels("graph-svg", "x",
+                                    x_axis_start_loc, x_axis_end,
+                                    AxesTicks["x_axis_tick_info"])
         
   </script>
 

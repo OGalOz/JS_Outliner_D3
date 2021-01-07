@@ -56,7 +56,12 @@ window.BasicShellData = {
                 "position": "absolute",
                 "border": "2px solid gray",
                 "fontWeight": "bold",
-                "textAlign": "center"
+                "textAlign": "center",
+                "justifyContent": "center",
+                "display": "flex",
+                "alignItems": "center",
+                "textDecoration": "underline",
+                "fontSize": "30px"
 
             },
             "unq_prp": {

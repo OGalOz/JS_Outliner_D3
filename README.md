@@ -135,4 +135,9 @@
     5. makeLine(d3svg, color, x1, y1, x2, y2, stroke_width)
         This creates a line
     6. makeText(d3svg, font_weight, font_size, x, y, text_str)
+    7. makeAxisTicksAndTickLabels(svg_id, axis_type,
+                                    axis_start_loc, axis_end_loc,
+                                    tick_info_list)
+        We create ticks for horizontal or vertical axes such
+            as an x or y axis
 

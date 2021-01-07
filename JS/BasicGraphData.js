@@ -21,7 +21,7 @@ window.SVGGraphAxes = {
             "label": "Default X"
         },
         "x_axis_i": {
-            "lc": [0.16, 0.55],
+            "lc": [0.16, 0.84],
             "len_frac": 0.78,
             "style_i": {
                 "strokeWidth": "2px"
