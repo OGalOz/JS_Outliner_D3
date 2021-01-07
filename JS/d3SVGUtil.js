@@ -63,6 +63,7 @@ function makeSVGAxesAndLabels(svg_id, svg_axes_info) {
 
 
 
+
     // We get the location of the bottom left corner of where the 
     // x and y values start
     let x_axis_org = [x_i["x_axis_i"]["lc"][0] * dWidth, 
@@ -81,7 +82,7 @@ function makeSVGAxesAndLabels(svg_id, svg_axes_info) {
 
    //Making Y axis line (no ticks)
    makeLine(d3svg, "black", y_axis_org[0], y_axis_org[1], 
-            y_axis_org[0], y_axis_org[0] - y_axis_len, 
+            y_axis_org[0], y_axis_org[1] - y_axis_len, 
             y_i["y_axis_i"]["style_i"]["strokeWidth"]);
 
     
