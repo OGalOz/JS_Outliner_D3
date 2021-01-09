@@ -21,7 +21,9 @@ function clearSVG(svg_id) {
 
 }
 
-function makeSVGAxesAndLabels(svg_id, svg_axes_info) {
+function makeSVGAxesAndLabels(svg_id, svg_axes_info, draw_x_axis=true,
+                              draw_y_axis=true, draw_x_label=true,
+                              draw_y_label=true) {
     // This function takes the standard form of 
     // SVG graph axes inputs as defined in this package
     // and creates the axis and the labels.
@@ -62,47 +64,74 @@ function makeSVGAxesAndLabels(svg_id, svg_axes_info) {
    let y_axis_len = y_i["y_axis_i"]["len_frac"]*dHeight;
 
 
+    if (draw_x_axis) {
+         // We get the location of the bottom left corner of where the 
+        // x values start
+         let x_axis_org = [x_i["x_axis_i"]["lc"][0] * dWidth, 
+                           x_i["x_axis_i"]["lc"][1] * dHeight]
 
 
-    // We get the location of the bottom left corner of where the 
-    // x and y values start
-    let x_axis_org = [x_i["x_axis_i"]["lc"][0] * dWidth, 
-                      x_i["x_axis_i"]["lc"][1] * dHeight]
-
-    let y_axis_org = [y_i["y_axis_i"]["bc"][0] * dWidth, 
-                      y_i["y_axis_i"]["bc"][1] * dHeight]
-
-   let x_blc = svg_axes_info["graph_i"]["blc"][0]*dWidth;
-   let y_blc = svg_axes_info["graph_i"]["blc"][1]*dHeight;
-
-   //Making X axis line (no ticks)
-   makeLine(d3svg, "black", x_axis_org[0], x_axis_org[1], 
-            x_axis_org[0] + x_axis_len, x_axis_org[1], 
-            x_i["x_axis_i"]["style_i"]["strokeWidth"]);
-
-   //Making Y axis line (no ticks)
-   makeLine(d3svg, "black", y_axis_org[0], y_axis_org[1], 
-            y_axis_org[0], y_axis_org[1] - y_axis_len, 
-            y_i["y_axis_i"]["style_i"]["strokeWidth"]);
-
-    
-   // Labels
-    let xt = x_i["x_title_i"]
-    let yt = y_i["y_title_i"]
-
-   // X-Axis Text Label
-   makeText(d3svg, xt["style_i"]["fontWeight"], xt["style_i"]["fontSize"],
-            x_axis_org[0] + x_axis_len*xt["blc"][0],
-           dHeight*xt["blc"][1], xt["label"], xt["style_i"]["fontColor"])
-   
-   makeYAxisLabel(d3svg, dWidth, dHeight, yt);
-
-    return {
-        "x_axis_start": x_axis_org,
-        "y_axis_start": y_axis_org,
-        "x_axis_len": x_axis_len,
-        "y_axis_len": y_axis_len
+        //Making X axis line (no ticks)
+        makeLine(d3svg, "black", x_axis_org[0], x_axis_org[1], 
+                 x_axis_org[0] + x_axis_len, x_axis_org[1], 
+                 x_i["x_axis_i"]["style_i"]["strokeWidth"]);
     }
+
+
+   if (draw_y_axis) {
+         // We get the location of the bottom left corner of where the 
+        // y values start
+        let y_axis_org = [y_i["y_axis_i"]["bc"][0] * dWidth, 
+                           y_i["y_axis_i"]["bc"][1] * dHeight]
+
+        //Making Y axis line (no ticks)
+        makeLine(d3svg, "black", y_axis_org[0], y_axis_org[1], 
+                 y_axis_org[0], y_axis_org[1] - y_axis_len, 
+                 y_i["y_axis_i"]["style_i"]["strokeWidth"]);
+
+    }
+
+   
+
+   let graph_blc = [svg_axes_info["graph_i"]["blc"][0]*dWidth,
+                    svg_axes_info["graph_i"]["blc"][1]*dHeight];
+
+   let graph_trc = [svg_axes_info["graph_i"]["trc"][0]*dWidth,
+                    svg_axes_info["graph_i"]["trc"][1]*dHeight];
+
+    // Labels
+    if (draw_x_label) {
+         let xt = x_i["x_title_i"]
+
+        // X-Axis Text Label
+        makeText(d3svg, xt["style_i"]["fontWeight"], xt["style_i"]["fontSize"],
+                 graph_blc[0] + x_axis_len*xt["blc"][0],
+                dHeight*xt["blc"][1], xt["label"], xt["style_i"]["fontColor"])
+    }
+
+    if (draw_y_label) {
+        let yt = y_i["y_title_i"]
+         makeYAxisLabel(d3svg, dWidth, dHeight, yt);
+    }
+
+
+    ret_d = {
+        "x_axis_len": x_axis_len,
+        "y_axis_len": y_axis_len,
+        "graph_blc": graph_blc,
+        "graph_trc": graph_trc
+    }
+
+    if (draw_x_axis)  {
+        ret_d["x_axis_start"] = [x_i["x_axis_i"]["lc"][0] * dWidth, 
+                                x_i["x_axis_i"]["lc"][1] * dHeight]
+    }
+    if (draw_y_axis)  {
+        ret_d["y_axis_start"] = [y_i["y_axis_i"]["bc"][0] * dWidth, 
+                                y_i["y_axis_i"]["bc"][1] * dHeight]
+    }
+
+    return ret_d
 
 }
 
