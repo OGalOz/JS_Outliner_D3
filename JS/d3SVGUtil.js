@@ -135,20 +135,49 @@ function makeSVGAxesAndLabels(svg_id, svg_axes_info, draw_x_axis=true,
 
 }
 
+function makeDashedLine(d3svg, start_coordinates, end_coordinates,
+                        dash_length, break_length,
+                        color, stroke_width) {
+    /*
+     * In order to draw a dashed line we need
+     *      the slope of the line
+     *
+     *
+     *
+     */
+        
+        let stroke_break_str = dash_length.toString() + ", " + 
+                                break_length.toString();
+        
+        d3svg.append("line")
+        .attr('x1', start_coordinates[0])
+        .attr('y1', start_coordinates[1])
+        .attr('x2', end_coordinates[0])
+        .attr('y2', end_coordinates[1])
+        .attr("stroke", color)
+        .attr("stroke-width", stroke_width)
+        .style("stroke-dasharray", (stroke_break_str));  
+        // ^ This line here!!
+
+}
+
 
 
 function makeYAxisLabel(d3svg, svgWidth, svgHeight, yt) {
-    // yt: 
-    //              blc: <x frac from left, y frac from top>
-    //              trc: <x frac from left, y frac from top>
-    //              style_i:
-    //                  name (Str) -> value (str)
-    //              label: str
+    /* 
+     yt: y title object. Contains the following keys:
+        blc: <x frac from left, y frac from top>
+        trc: <x frac from left, y frac from top>
+        style_i:
+            name (Str) -> value (str)
+        label: str
+    */
 
             // Yx and Yy refer to the Y label location x and y coordinates
             let Yx = svgWidth * (yt["blc"][0] + yt["trc"][0]) * (0.5)
             let Yy = svgHeight * (yt["blc"][1] + yt["trc"][1]) * (0.5)
 
+            // axis translate value
             let ax_tsl = Yx.toString() + "," + Yy.toString()
 
             
@@ -174,11 +203,14 @@ function makeYAxisLabel(d3svg, svgWidth, svgHeight, yt) {
 
 function makeAxisTicksAndTickLabels(svg_id, axis_type,
                                     axis_start_loc, axis_end_loc,
-                                    tick_info_list) {
+                                    tick_info_list,
+                                    avoid_2nd_to_last_label = false,
+                                    avoid_2nd_to_last_tick = false) {
 
     // This function takes the starting and ending points of 
     // an axis and adds ticks with information coming
-    // from the 'tick_info_list'
+    // from the 'tick_info_list'. We can avoid drawing the 2nd
+    // to last label
     //
     // Args:
     //      svg_id: (str) The id of the svg object we want to add to
@@ -187,9 +219,9 @@ function makeAxisTicksAndTickLabels(svg_id, axis_type,
     //      axis_type: (str) fixed vocab ["x" (horizontal), or "y" (vertical)]
     //      tick_info_list: list<tick_info>
     //          tick_info: list<frac (Number), tick_length (Number), tick_style,
-    //                          tick_color, tick_stroke_width,
-    //                          label_style, label_text, label_color
-    //                          label_font_size, label_dist>
+    //                          tick_color, tick_stroke_width (Number),
+    //                          label_style (s), label_text (s), label_color (s)
+    //                          label_font_size (Number), label_dist (Number)>
     //              frac: The TOTAL fraction of the axis where this tick lies
     //              tick_length: The length of the tick within the SVG
     //              tick_style: str fixed vocab: ["top", "cross", "bottom"]
@@ -199,36 +231,59 @@ function makeAxisTicksAndTickLabels(svg_id, axis_type,
     //              tick_color: str (CSS color)
     //              label_style: str fixed vocab ["above", "below"]
     //              label_text: str The actual label value.
+    //
+    //              avoid_2nd_to_last_label: (bool)
+    //              avoid_2nd_to_last_y: (bool)
    
     let d3svg = getSVG(svg_id)
     let axis_length = null
     if (axis_type == "x") {
         axis_length = axis_end_loc[0] - axis_start_loc[0]
     } else if (axis_type == "y") {
-        axis_length = axis_end_loc[1] - axis_start_loc[1]
+        axis_length = axis_start_loc[1] - axis_end_loc[1]
     } else {
         throw "unknown axis type: " + axis_type
     }
 
     // Here we add the ticks
-    for (let i=0; i < tick_info_list.length; i++) {
 
-        let crnt_tick_info = tick_info_list[i];
+    if (axis_type == "x") {
+        for (let i=0; i < tick_info_list.length; i++) {
 
-        // This variable holds the [x,y] location of tick center
-        let tick_axis_loc = null
-        if (axis_type == "x") {
-           tick_axis_loc = [axis_start_loc[0] + crnt_tick_info[0]*axis_length,
+            let crnt_tick_info = tick_info_list[i];
+
+            let tick_axis_loc = [axis_start_loc[0] + crnt_tick_info[0]*axis_length,
                             axis_start_loc[1]]
-        } else if (axis_type == "y") {
-           tick_axis_loc = [axis_start_loc[0],
-                            axis_start_loc[1] - crnt_tick_info[0]*axis_length ]
+            
+            if ((avoid_2nd_to_last_label) && (i == tick_info_list.length - 2)) {
+                addTickAndLabel(d3svg, axis_type, crnt_tick_info, 
+                    tick_axis_loc, no_label=true)
+            } else {
+                addTickAndLabel(d3svg, axis_type, crnt_tick_info, tick_axis_loc)
+            }
         }
-        addTickAndLabel(d3svg, axis_type, crnt_tick_info, tick_axis_loc)
+    } else if (axis_type == "y") {
+        for (let i=0; i < tick_info_list.length; i++) {
+
+            let crnt_tick_info = tick_info_list[i];
+
+            let tick_axis_loc = [axis_start_loc[0],
+                            axis_start_loc[1] - crnt_tick_info[0]*axis_length ]
+            
+            if ((avoid_2nd_to_last_label) && (i == tick_info_list.length - 2)) {
+                addTickAndLabel(d3svg, axis_type, crnt_tick_info, 
+                    tick_axis_loc, no_label=true)
+            } else {
+                addTickAndLabel(d3svg, axis_type, crnt_tick_info, tick_axis_loc)
+            }
+        }
+
     }
+
 }
 
-function addTickAndLabel(d3svg, axis_type, tick_info, tick_axis_loc) {
+function addTickAndLabel(d3svg, axis_type, tick_info, tick_axis_loc, 
+                        no_label=false) {
     // Info regarding params comes from function 
     //  makeAxisTicksAndTickLabels
     //  tick_axis_loc: list<x (Num), y (Num)>
@@ -236,6 +291,7 @@ function addTickAndLabel(d3svg, axis_type, tick_info, tick_axis_loc) {
     //                  tick_color, tick_stroke_width,
     //                  label_style, label_text, label_color,
     //                  label_font_size, label_dist>
+    //  no_label: boolean don't add the label
 
     let tick_start_loc = null
     let tick_end_loc = null
@@ -256,16 +312,20 @@ function addTickAndLabel(d3svg, axis_type, tick_info, tick_axis_loc) {
                 tick_start_loc[1], tick_end_loc[0], 
                 tick_end_loc[1], tick_info[4])
 
-        // Label - checking label style ("top" or "bottom")
-        let init_label_loc = null;
-        if (tick_info[5] == "top") {
-            init_label_loc = [tick_axis_loc[0], tick_axis_loc[1] - tick_info[9]]
-        } else if (tick_info[5] == "bottom") {
-            init_label_loc = [tick_axis_loc[0], tick_axis_loc[1] + tick_info[9]]
-        }
+        if (!(no_label)) {
+            // Label - checking label style ("top" or "bottom")
+            let init_label_loc = null;
+            if (tick_info[5] == "top") {
+                init_label_loc = [tick_axis_loc[0], tick_axis_loc[1] - tick_info[9]]
+            } else if (tick_info[5] == "bottom") {
+                init_label_loc = [tick_axis_loc[0], tick_axis_loc[1] + tick_info[9]]
+            } else {
+                console.log(" label style needs to be top or bottom!")
+            }
 
-        makeText(d3svg, "normal", tick_info[8], init_label_loc[0] - 3,
-                 init_label_loc[1], tick_info[6], tick_info[7])
+                makeText(d3svg, "normal", tick_info[8], init_label_loc[0] - 3,
+                     init_label_loc[1], tick_info[6], tick_info[7])
+        }
 
     } else if (axis_type == "y") {
 
@@ -284,16 +344,24 @@ function addTickAndLabel(d3svg, axis_type, tick_info, tick_axis_loc) {
                 tick_start_loc[1], tick_end_loc[0], 
                 tick_end_loc[1], tick_info[4])
 
-        // Label - checking label style ("top" or "bottom")
-        let init_label_loc = null;
-        if (tick_info[5] == "top") {
-            init_label_loc = [tick_axis_loc[0] + tick_info[9], tick_axis_loc[1]]
-        } else if (tick_info[5] == "bottom") {
-            init_label_loc = [tick_axis_loc[0] -  tick_info[9], tick_axis_loc[1]]
-        }
+        if (!(no_label)) {
+            // Label - checking label style ("top" or "bottom")
+            let init_label_loc = null;
+            if (tick_info[5] == "top") {
+                init_label_loc = [tick_axis_loc[0] + tick_info[9], tick_axis_loc[1]]
+            } else if (tick_info[5] == "bottom") {
+                let label_distance_addition = 0;
+                if (tick_info[6][0] == "-") {
+                    label_distance_addition = 3;
+                }
+                init_label_loc = [tick_axis_loc[0] -  tick_info[9] - 
+                                  label_distance_addition,
+                                  tick_axis_loc[1]]
+            }
 
-        makeText(d3svg, "normal", tick_info[8], init_label_loc[0],
+            makeText(d3svg, "normal", tick_info[8], init_label_loc[0],
                  init_label_loc[1] + 3, tick_info[6], tick_info[7])
+        }
 
     }
 
@@ -325,7 +393,7 @@ function makeLine(d3svg, color, x1, y1, x2, y2, stroke_width ) {
 }
 
 
-function makeText(d3svg, font_weight, font_size, x, y, text_str, font_color) {
+function makeText(d3svg, font_weight, font_size, x, y, text_str, font_color, id_txt=null) {
     /*
      *  Args:
      *  
@@ -342,13 +410,24 @@ function makeText(d3svg, font_weight, font_size, x, y, text_str, font_color) {
         text_str = "Default Text"
     }
 
-    d3svg.append('text')
-        .attr('font-weight', font_weight)
-        .attr('font-size', font_size)
-        .attr('fill', font_color)
-        .attr('x', x)
-        .attr('y', y)
-        .text(text_str);
+    if (id_txt == null) {
+        d3svg.append('text')
+            .attr('font-weight', font_weight)
+            .attr('font-size', font_size)
+            .attr('fill', font_color)
+            .attr('x', x)
+            .attr('y', y)
+            .text(text_str);
+    } else {
+         d3svg.append('text')
+            .attr('font-weight', font_weight)
+            .attr('font-size', font_size)
+            .attr('fill', font_color)
+            .attr('x', x)
+            .attr('y', y)
+            .attr('id', id_txt) 
+            .text(text_str);
+    }
 
 }
 
@@ -370,7 +449,9 @@ function GetProperTicks(start_val, end_val) {
 
     // Checking inputs
     if ( (Math.floor(start_val) != start_val) || 
-        (Math.floor(end_Val) != end_val) ) {
+        (Math.floor(end_val) != end_val) ) {
+            console.log(start_val)
+            console.log(end_val)
             throw "start_val and end_val must be integers"
     }
 
@@ -504,4 +585,220 @@ function GetTickValues(start_val, end_val, subdivs) {
 
 }
 
+function makeStandardTickInfoListFromTicks(tick_list, label_font_size,
+                                            tick_length=8, tick_width=2,
+                                           tick_style="bottom",
+                                            tick_color="black",
+                                            label_style="bottom",
+                                            label_color="black",
+                                            label_dist=20) {
+    /*
+     *
+     * Args: tick_list: list<Num> (increasing order (?))
+     * We return:
+          tick_info_list: list<tick_info>
+              tick_info: list<frac (Number), tick_length (Number), tick_style,
+                              tick_color, tick_stroke_width (Number),
+                              label_style, label_text, label_color
+                              label_font_size (Number), label_dist (Number)>
+                    ^ * all string except those labelled Number
+                  frac: The TOTAL fraction of the axis where this tick lies
+                  tick_length: The length of the tick within the SVG
+                  tick_style: str fixed vocab: ["top", "cross", "bottom"]
+                      this refers to if the tick points up from the axis,
+                      crosses the axis, or protrudes from the bottom of
+                      the axis.
+                  tick_color: str (CSS color)
+                  label_style: str fixed vocab ["above", "below"]
+                  label_text: str The actual label value.
+     *
+     *
+     */
 
+    let total_tick_range = tick_list[tick_list.length -1] - tick_list[0];
+    let low_val = tick_list[0];
+    let tick_info_list = [];
+
+    for (let i=0; i<tick_list.length; i++) {
+
+        let new_tick_info = [
+            (tick_list[i] - low_val)/total_tick_range,
+            tick_length,
+            tick_style,
+            tick_color,
+            tick_width,
+            label_style,
+            tick_list[i].toString(),
+            label_color,
+            label_font_size,
+            label_dist 
+        ]
+       tick_info_list.push(new_tick_info) 
+    }
+
+    return tick_info_list
+
+
+}
+
+function addManyPointsToPlot(d3svg,
+                            point_list,
+                            total_x_range,
+                            x_axis_len,
+                            x_axis_start,
+                            lowest_x,
+                            total_y_range,
+                            y_axis_len,
+                            y_axis_start,
+                            lowest_y,
+                            point_radius,
+                            async=false,
+                            quadrant_coloration=null,
+                            point_contains_data=false,
+                            point_click_function=null,
+                            point_opacity=0.25,
+                            point_color="black",
+                            point_shape="circle"
+                            ) {
+    /*
+     * This function simultaneously adds multiple points
+     *      in coordinate form (values related to the plot,
+     *          not the svg). Points are in list point_list.
+     *
+     * point_list: list<Coordinate + data, Coord...>
+     *      Coordinate: list<x (Num), y (Num), [data]> (NOT SVG, but graph vals)
+     *  total_x_range: (Num) Distance from lowest x value to highest
+     *  x_axis_len: (Num) in svg terms, length of axis
+     *  x_axis_start: coordinates in svg terms
+     *  lowest_x: (Num) Lowest X value
+     *  total_y_range: (Num) Distance from lowest y value to highest
+     *  y_axis_len: (Num) in svg terms, length of axis
+     *  y_axis_start: coordinates in svg terms
+     *  lowest_y: (Num) Lowest Y value
+     *  point_radius: Num
+     *  async: (bool) If true, we return a Promise
+     *  quadrant_coloration: (Object) Choose colors per quadrant
+     *      'q1' -> q1 color (str)
+     *      'q2' -> q2 color, ... etc
+     *  point_opacity: (Num)
+     *
+     * point_click_function: (javascript function)
+     * point_contains_data: boolean if point has data at 3rd index
+     *
+     *
+     * Returns:
+     *      fulfilled Promise if it succeeds
+     */
+
+
+
+
+    // Add dots
+    if (point_shape == "circle") {
+        d3svg.append('g')
+            .selectAll('dot')
+            .data(point_list)
+            .enter()
+            .append('circle')
+                .attr('cx', function (d) { 
+                    return x_axis_start[0] + (
+                                 (d[0] - lowest_x)/total_x_range)*x_axis_len;} )
+                .attr('cy', function (d) { 
+                    return y_axis_start[1] - (
+                                 (d[1] - lowest_y)/total_y_range)*y_axis_len;} )
+                .attr('r', point_radius)
+                .attr('fill', function(d) {
+                    if (quadrant_coloration == null) {
+                        return point_color
+                    } else {
+                        if (d[0]*d[1] >= 0) {
+                            if (d[0] > 0) {
+                                return quadrant_coloration['q1']
+                            } else {
+                                return quadrant_coloration['q3']
+                            }
+                        } else {
+                            if (d[0] > 0) {
+                                return quadrant_coloration['q4']
+                            } else {
+                                return quadrant_coloration['q2']
+                            }
+                        }
+                    }
+                 })
+                .attr('opacity', point_opacity)
+                .on('click', function(d) {
+                    if (point_click_function != null) {
+                        if (point_contains_data) {
+                            point_click_function(d[2])
+                        } else {
+                            return point_click_function(d)
+                        }
+                    }
+                }); 
+    }
+
+    if (async == true) {
+        return new Promise((resolve, reject) => {
+            resolve(true)
+        })
+    } else {
+        return true
+    }
+
+
+}
+                            
+
+
+function addSinglePointToPlot(d3svg,
+                        point_coordinates, 
+                        point_color,
+                        point_shape,
+                        point_radius,
+                        point_opacity,
+                        point_data,
+                        point_click_function) {
+    /*
+     * d3svg: d3 svg object
+     * point_coordinates: [x (Num), y (Num)]
+     * point_color: (str)
+     * point_shape: (str) ["circle", "square", "triangle"]
+     * point_radius: (Num) distance from center to corner
+     * point_opacity: (Num)
+     * point_data: list<>
+     * point_click_function: function
+     *
+     */
+
+   if (point_shape == "circle") {
+       if (point_data.length > 0) {
+        d3svg.append("circle")
+        .attr("cx", point_coordinates[0])
+        .attr("cy", point_coordinates[1])
+        .attr("r", point_radius)
+        .attr("fill", point_color)
+        .attr("opacity", point_opacity)
+        .data(point_data)
+        .on("click", function(d) {
+            point_click_function(d); 
+        });} else {
+            d3svg.append("circle")
+            .attr("cx", point_coordinates[0])
+            .attr("cy", point_coordinates[1])
+            .attr("r", point_radius)
+            .attr("fill", point_color)
+            .attr("opacity", point_opacity);
+        }
+   } else {
+       throw "No code written for adding rects or triangles yet"
+   }
+        
+}
+
+
+/*
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+*/

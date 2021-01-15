@@ -3,9 +3,9 @@
      */
 
 
+async function refreshScatterPlotAxes(svg_id, scatter_data, axes_info,
+                                     dashed_lines_bool=true) {
 
-
-function populateSVGWithScatterPlot(svg_id, scatter_data, axes_info) {
     /* Args:
       svg_id: (str) DOM id of svg object
       scatter_data: (Object)
@@ -13,18 +13,46 @@ function populateSVGWithScatterPlot(svg_id, scatter_data, axes_info) {
          max_y: Number
          min_x: Number 
          max_x: Number
-         point_list: list<<fit (Num), t (Num)>, ... >
+         [point_list]: list<<fit (Num), t (Num)>, ... >
       axes_info: (Object) 
         Like svg_axes_info as defined in 
             makeSVGAxesAndLabels from d3SVGUtil.js
             but with some parts left undefined,
             like x axis left corner
     */
-    
-    let x_axis_start_val = Math.ceil(scatter_data["min_x"] - 1);
-    let x_axis_end_val = Math.floor(scatter_data["max_x"] + 1);
-    let y_axis_start_val = Math.floor(scatter_data["min_y"] - 1);
-    let y_axis_end_val = Math.ceil(scatter_data["max_y"] + 1);
+
+    clearSVG(svg_id)
+    new_ret_d = await createScatterPlotAxes(svg_id, scatter_data, axes_info,
+                                     dashed_lines_bool)
+
+    window.ret_d = new_ret_d
+    return new_ret_d
+}
+
+
+async function createScatterPlotAxes(svg_id, scatter_data, axes_info,
+                                     dashed_lines_bool=true,
+                                     avoid_2nd_to_last_label=false,
+                                     avoid_2nd_to_last_tick=false) {
+    /* Args:
+      svg_id: (str) DOM id of svg object
+      scatter_data: (Object)
+         min_y: Number
+         max_y: Number
+         min_x: Number 
+         max_x: Number
+         [point_list]: list<<fit (Num), t (Num)>, ... >
+      axes_info: (Object) 
+        Like svg_axes_info as defined in 
+            makeSVGAxesAndLabels from d3SVGUtil.js
+            but with some parts left undefined,
+            like x axis left corner
+    */
+
+    let x_axis_start_val = Math.ceil(scatter_data["min_x"] - .99);
+    let x_axis_end_val = Math.floor(scatter_data["max_x"] + .99);
+    let y_axis_start_val = Math.ceil(scatter_data["min_y"] - .99);
+    let y_axis_end_val = Math.floor(scatter_data["max_y"] + .99);
 
     // GetProperTicks is function from d3SVGUtil
     let x_ticks_list = GetProperTicks(x_axis_start_val, x_axis_end_val)
@@ -41,11 +69,10 @@ function populateSVGWithScatterPlot(svg_id, scatter_data, axes_info) {
     let y_crosses_zero = y_info_a[1]
     
     // Just the main axes and labels for the axes, no ticks
-    ret_d = makeSVGAxesAndLabels(svg_id, axes_info)
-
+    let return_object = makeSVGAxesAndLabels(svg_id, axes_info)
 
     /*
-     ret_d contains:
+     return_object contains:
         x_axis_len: Num
         y_axis_len: Num
         graph_blc: (coordinates [x,y])
@@ -54,94 +81,261 @@ function populateSVGWithScatterPlot(svg_id, scatter_data, axes_info) {
         x_axis_start: (coordinates [x,y])
     */
 
-    // We draw dashed lines where the 0's of each axis are
-    d3svg = getSVG(svg_id);
-    drawDashedZeroLines(d3svg, x_ticks_list, y_ticks_list,
-                        ret_d['x_axis_len'], ret_d['x_axis_start'],
-                        ret_d['y_axis_len'], ret_d['y_axis_start'],
-                        x_crosses_zero, y_crosses_zero)
-
-
     // We draw the ticks and the labels for X, then Y:
 
     // First we need to generate the tick_info_list:
     
     x_tick_info_list = makeStandardTickInfoListFromTicks(x_ticks_list, 10)
+    // Func from d3SVGUtil
     makeAxisTicksAndTickLabels(svg_id, "x",
-                               ret_d['x_axis_start'], 
-                               [ret_d['x_axis_start'][0] + ret_d['x_axis_len'],
-                               ret_d['x_axis_start'][1]],
-                               x_tick_info_list) 
+                               return_object['x_axis_start'], 
+                               [return_object['x_axis_start'][0] + return_object['x_axis_len'],
+                               return_object['x_axis_start'][1]],
+                               x_tick_info_list,
+                               avoid_2nd_to_last_label,
+                               avoid_2nd_to_last_tick) 
 
     y_tick_info_list = makeStandardTickInfoListFromTicks(y_ticks_list, 10)
     makeAxisTicksAndTickLabels(svg_id, "y",
-                               ret_d['y_axis_start'], 
-                               [ret_d['y_axis_start'][0],
-                               ret_d['y_axis_start'][1]  - ret_d['y_axis_len']],
-                               y_tick_info_list) 
+                               return_object['y_axis_start'], 
+                               [return_object['y_axis_start'][0],
+                               return_object['y_axis_start'][1]  - return_object['y_axis_len']],
+                               y_tick_info_list,
+                               avoid_2nd_to_last_label,
+                               avoid_2nd_to_last_tick) 
 
 
-    // Now we actually populate the graph with points
-    let point_list = scatter_data["point_list"];
-
-    populateSVGWithScatterPoints(d3svg,
-                                 point_list,
-                                 x_ticks_list,
-                                 y_ticks_list,
-                                 ret_d['x_axis_start'],
-                                 ret_d['y_axis_start'],
-                                 ret_d['x_axis_len'],
-                                 ret_d['y_axis_len'])
-    /*
-    let total_x_range = x_ticks_list[x_ticks_list.length -1] - x_ticks_list[0];
-    let total_y_range = y_ticks_list[y_ticks_list.length -1] - y_ticks_list[0];
-
-    for (let i = 0; i < point_list.length; i++) {
-
-        let point = point_list[i];
-
-        //Getting point coordinates
-        let point_coordinates = [ret_d['x_axis_start'][0] + (
-                             (point[0] - x_ticks_list[0])/total_x_range)*ret_d['x_axis_len'],
-                             ret_d['y_axis_start'][1] - (
-                             (point[1] - y_ticks_list[0])/total_y_range)*ret_d['y_axis_len']]
-
-        if (point[0] < 0) {
-        
-                            
-            // Drawing the circle red
-            addPointToPlot(d3svg,
-                        point_coordinates, 
-                        "red",
-                        "circle",
-                        3,
-                        0.5,
-                        [],
-                        nullfunc)
-        } else {
-
-            // Drawing the circle green
-            addPointToPlot(d3svg,
-                        point_coordinates, 
-                        "green",
-                        "circle",
-                        3,
-                        0.5,
-                        [],
-                        nullfunc)
-        }
+    if (dashed_lines_bool) {
+        // We draw dashed lines where the 0's of each axis are
+        d3svg = getSVG(svg_id);
+        drawDashedZeroLines(d3svg, x_ticks_list, y_ticks_list,
+                            return_object['x_axis_len'], return_object['x_axis_start'],
+                            return_object['y_axis_len'], return_object['y_axis_start'],
+                            x_crosses_zero, y_crosses_zero)
     }
-    */
+
+    return {
+        "x_ticks_list" : x_ticks_list,
+        "y_ticks_list" : y_ticks_list,
+        "x_axis_len" : return_object['x_axis_len'],
+        "y_axis_len" : return_object['y_axis_len'],
+        "x_axis_start" : return_object['x_axis_start'],
+        "y_axis_start" : return_object['y_axis_start'],
+        "graph_blc": return_object['graph_blc'],
+        "graph_trc": return_object['graph_trc']
+    }
+
 }
 
-function populateSVGWithScatterPoints(d3svg,
+
+
+async function populateSVGGraphWithPoints(svg_id,
+                                          point_list,
+                                          x_ticks_list,
+                                          y_ticks_list,
+                                          x_axis_start,
+                                          y_axis_start,
+                                          x_axis_len,
+                                          y_axis_len,
+                                          async_points_val=100000) {
+
+    printLoadingSign('bottom-bar', 0)
+    /*
+    let ld = setInterval( function() {
+        printLoadingSign('bottom-bar', 1)
+    }, 500)
+    */
+
+    // async part of function:
+    setTimeout(function() {
+       let finished = delayedPopulateScatterPlot(d3svg,
+                        point_list,
+                        x_ticks_list,
+                        y_ticks_list,
+                        ret_d['x_axis_start'],
+                        ret_d['y_axis_start'],
+                        ret_d['x_axis_len'],
+                        ret_d['y_axis_len'],
+                        300000)
+       finished.then((value) => {
+           console.log("Finished plotting") 
+           // We show the user we are done loading points. Remove sign
+           // (from d3SVGUtil)
+           printLoadingSign('bottom-bar', 2)
+           //window.still_loading = false
+           //clearInterval(ld)
+       })
+
+    }, 10)
+
+}
+
+
+async function delayedPopulateScatterPlot(d3svg, 
+                                      point_list,
+                                      x_ticks_list,
+                                      y_ticks_list,
+                                      x_axis_start,
+                                      y_axis_start,
+                                      x_axis_len,
+                                      y_axis_len,
+                                      split_num=50000) {
+
+    // Returns a promise if it has few enough points to update 
+
+    pl_len = point_list.length; 
+    if (pl_len > 1000000000) {
+        console.log(pl_len)
+        throw "point_list length is too long, should be less than 10^9"
+    } else if (pl_len > split_num) {
+        let remainder = pl_len % split_num
+        let num_divs = (pl_len - remainder)/split_num
+        console.log(num_divs)
+        window.current_div = -1
+        window.new_current = 0
+        var delayedPopulateInterval = setInterval(function() {
+                if (window.new_current > window.current_div) {
+                    window.current_div = window.new_current;
+                    let new_promise = setTimeout(function() {
+                        indexedPopulate(current_div,
+                                        num_divs,
+                                        d3svg,
+                                        point_list,
+                                        split_num,
+                                        x_ticks_list,
+                                        y_ticks_list,
+                                        x_axis_start,
+                                        y_axis_start,
+                                        x_axis_len,
+                                        y_axis_len)
+                    new_promise.then((value) => {
+                        window.new_current += 1
+                    } )
+                    }, 1000)
+                } else if (window.new_current == num_divs) {
+
+                    // Goes from last remainder to the end
+                    console.log("Plotting " + num_divs.toString() + "/" + num_divs.toString() 
+                            + " fractions of the total points")
+                    let final_populated = populateSVGWithScatterPoints(d3svg,
+                                     point_list.slice(
+                                         (num_divs)*split_num
+                                     ),
+                                     x_ticks_list,
+                                     y_ticks_list,
+                                     x_axis_start,
+                                     y_axis_start,
+                                     x_axis_len,
+                                     y_axis_len)
+                    final_populated.then((value) => {
+
+                        clearInterval(delayedPopulateInterval)
+                        printLoadingSign('bottom-bar', 2)
+                        return new Promise((resolve, reject) => {
+                            resolve(true)
+                        })
+                    })
+                }
+            
+           printLoadingSign('bottom-bar', 1)
+        }, 500)
+    
+        /*
+     window.final_populated.then((value) => {
+                return new Promise((resolve, reject) => {
+                        resolve(true)
+                    })
+
+    })
+    */
+
+    } else {
+        let populated = populateSVGWithScatterPoints(d3svg,
+                             point_list,
+                             x_ticks_list,
+                             y_ticks_list,
+                             x_axis_start,
+                             y_axis_start,
+                             x_axis_len,
+                             y_axis_len
+                             )
+
+        populated.then((value) => {
+            return new Promise((resolve, reject) => {
+                    resolve(true)
+                })
+
+        })
+    }
+
+}
+
+function indexedPopulate(i,
+                max_num,
+                d3svg,
+                point_list,
+                split_num,
+                x_ticks_list,
+                y_ticks_list,
+                x_axis_start,
+                y_axis_start,
+                x_axis_len,
+                y_axis_len) {
+    /*
+     *
+     * Args:
+     *  i: the current index of work to be done
+     *  max_num: The maximum index of work to be done
+     */
+    
+    if ( i < max_num) {
+        
+         let populated = populateSVGWithScatterPoints(d3svg,
+                                     point_list.slice(
+                                         i*split_num,
+                                         (i+1)*split_num
+                                     ),
+                                     x_ticks_list,
+                                     y_ticks_list,
+                                     x_axis_start,
+                                     y_axis_start,
+                                     x_axis_len,
+                                     y_axis_len
+                                 )
+        /*
+        populated.then((value) => {
+            console.log("fulfilled")
+        })
+        */
+        return new Promise((resolve, reject) => {
+            resolve(true)
+        })
+    } else if (i == max_num){
+        return new Promise((resolve, reject) => {
+            resolve(true)
+        })
+    }else {
+        console.log("i surpassed max_num")
+
+        clearInterval(delayedPopulateInterval)
+    }
+
+}
+
+
+
+
+async function populateSVGWithScatterPoints(svg_id,
                                       point_list,
                                       x_ticks,
                                       y_ticks,
                                       x_axis_start,
                                       y_axis_start,
                                       x_axis_len,
-                                      y_axis_len) {
+                                      y_axis_len,
+                                      point_contains_data = false, 
+                                      point_click_function = null
+                                      ) {
     /*
      *
      * point_list: list<[x (Num), y (Num)]> for all the points
@@ -155,44 +349,45 @@ function populateSVGWithScatterPoints(d3svg,
      *
      */
 
+    let d3svg = getSVG(svg_id)
+
     let total_x_range = x_ticks[x_ticks.length -1] - x_ticks[0];
     let total_y_range = y_ticks[y_ticks.length -1] - y_ticks[0];
 
-    for (let i = 0; i < point_list.length; i++) {
-
-        let point = point_list[i];
-
-        //Getting point coordinates
-        let point_coordinates = [x_axis_start[0] + (
-                             (point[0] - x_ticks[0])/total_x_range)*x_axis_len,
-                             y_axis_start[1] - (
-                             (point[1] - y_ticks[0])/total_y_range)*y_axis_len]
-
-        if (point[0] < 0) {
-        
-                            
-            // Drawing the circle red
-            addPointToPlot(d3svg,
-                        point_coordinates, 
-                        "red",
-                        "circle",
-                        3,
-                        0.5,
-                        [],
-                        nullfunc)
-        } else {
-
-            // Drawing the circle green
-            addPointToPlot(d3svg,
-                        point_coordinates, 
-                        "green",
-                        "circle",
-                        3,
-                        0.5,
-                        [],
-                        nullfunc)
-        }
+    //quadrant coloration
+    var my_qc = {
+        'q1': 'green',
+        'q3': 'purple',
+        'q2': 'red',
+        'q4': 'blue'
     }
+    
+    // Note: addManyPointsToPlot is function from d3SVGUtil
+    // points_added is a Promise
+    let points_added = addManyPointsToPlot(d3svg,
+                            point_list,
+                            total_x_range,
+                            x_axis_len,
+                            x_axis_start,
+                            x_ticks[0],
+                            total_y_range,
+                            y_axis_len,
+                            y_axis_start,
+                            y_ticks[0],
+                            4.5,
+                            async=true,
+                            quadrant_coloration = my_qc,
+                            point_contains_data= point_contains_data,
+                            point_click_function= point_click_function
+                            )
+
+    points_added.then((value) => {
+        console.log("Added " + point_list.length.toString() + " points to plot A")
+        return new Promise((resolve, reject) => {
+            resolve(true)
+        })
+    })
+
 }
 
 
@@ -303,3 +498,88 @@ function addZeroToTicksList(ticks_list) {
     }
     
 }
+
+
+/*
+async function populateSVGWithScatterPlot(svg_id, scatter_data, axes_info) {
+    /* Args:
+      svg_id: (str) DOM id of svg object
+      scatter_data: (Object)
+         min_y: Number
+         max_y: Number
+         min_x: Number 
+         max_x: Number
+         point_list: list<<fit (Num), t (Num)>, ... >
+      axes_info: (Object) 
+        Like svg_axes_info as defined in 
+            makeSVGAxesAndLabels from d3SVGUtil.js
+            but with some parts left undefined,
+            like x axis left corner
+    */
+/*
+    
+    let x_axis_start_val = Math.ceil(scatter_data["min_x"] - 1);
+    let x_axis_end_val = Math.floor(scatter_data["max_x"] + 1);
+    let y_axis_start_val = Math.floor(scatter_data["min_y"] - 1);
+    let y_axis_end_val = Math.ceil(scatter_data["max_y"] + 1);
+
+    // GetProperTicks is function from d3SVGUtil
+    let x_ticks_list = GetProperTicks(x_axis_start_val, x_axis_end_val)
+    let y_ticks_list = GetProperTicks(y_axis_start_val, y_axis_end_val)
+    // ^ Note x_ticks_list and y_ticks_list are list<Num>
+
+    // We add the values 0 to both the x_ticks_list and the y_ticks_list
+    let x_info_a = addZeroToTicksList(x_ticks_list)
+    let y_info_a = addZeroToTicksList(y_ticks_list)
+    // We get ticks lists and whether or not they cross zero
+    x_ticks_list = x_info_a[0]
+    // below is a bool
+    let x_crosses_zero = x_info_a[1]
+    y_ticks_list = y_info_a[0]
+    // below is a bool
+    let y_crosses_zero = y_info_a[1]
+    
+    // Just the main axes and labels for the axes, no ticks
+    ret_d = makeSVGAxesAndLabels(svg_id, axes_info)
+
+
+    /*
+     ret_d contains:
+        x_axis_len: Num
+        y_axis_len: Num
+        graph_blc: (coordinates [x,y])
+        graph_trc: (coordinates [x,y])
+        y_axis_start: (coordinates [x,y])
+        x_axis_start: (coordinates [x,y])
+    */
+/*
+    // We draw dashed lines where the 0's of each axis are
+    d3svg = getSVG(svg_id);
+    drawDashedZeroLines(d3svg, x_ticks_list, y_ticks_list,
+                        ret_d['x_axis_len'], ret_d['x_axis_start'],
+                        ret_d['y_axis_len'], ret_d['y_axis_start'],
+                        x_crosses_zero, y_crosses_zero)
+
+
+    // We draw the ticks and the labels for X, then Y:
+
+    // First we need to generate the tick_info_list:
+    
+    x_tick_info_list = makeStandardTickInfoListFromTicks(x_ticks_list, 10)
+    makeAxisTicksAndTickLabels(svg_id, "x",
+                               ret_d['x_axis_start'], 
+                               [ret_d['x_axis_start'][0] + ret_d['x_axis_len'],
+                               ret_d['x_axis_start'][1]],
+                               x_tick_info_list) 
+
+    y_tick_info_list = makeStandardTickInfoListFromTicks(y_ticks_list, 10)
+    makeAxisTicksAndTickLabels(svg_id, "y",
+                               ret_d['y_axis_start'], 
+                               [ret_d['y_axis_start'][0],
+                               ret_d['y_axis_start'][1]  - ret_d['y_axis_len']],
+                               y_tick_info_list) 
+
+
+
+}
+*/

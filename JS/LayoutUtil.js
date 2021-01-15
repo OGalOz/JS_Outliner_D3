@@ -319,4 +319,111 @@ function createEntireShellFromShellDataObject(shell_data_obj) {
 
 }
 
+function setPageSize(scale_val) {
+    //scale_val is a Number
+    
+    var scale = 'scale(' + scale_val.toString() + ')';
+    document.body.style.webkitTransform =  scale;    // Chrome, Opera, Safari
+    document.body.style.msTransform =   scale;       // IE 9
+    document.body.style.transform = scale;     // General
+
+}
+
+
+
+function createTableWithRows(table_id, rows_info) {
+    /*
+     *
+     * Args:
+     *     table_id: str (DOM id of table element) 
+     *     rows_info: list<row_info>
+     *          row_info: list<cell_info, cell_info, ...>
+     *              cell_info: Object
+     *                  type: (str) ["link" or "text"]
+     *                  inner_text: (str) The text inside the cell
+     *                  id: (str) The DOM id
+     *                  [color]: Color of text
+     *                  [textDecoration]: How the text will look
+     *                  
+     *                  IF type is link:
+     *                      [href]: Link to go to
+     *                      [func]: The onclick function
+     *                          [func_params]: If func, then func_params
+     *                              must be present.
+     *  
+     *
+     */
+
+    // We get the table
+    let tbl = document.getElementById(table_id);
+    
+
+    // We iterate through each scaffold, giving it an entry in the table
+    for (let r = rows_info.length-1; r >= 0; r--) {
+
+        // Create an empty <tr> element and add it to the 1st position of the table:
+        let row = tbl.insertRow(0);
+        row.style.border = "1px solid black";
+
+        let c_row_info = rows_info[r];
+
+        for (let i=0; i < c_row_info.length; i++) {
+
+            // What does cell_info look like?
+            cell_info = c_row_info[i];
+            // We insert this cell into the row
+            c_cell = row.insertCell(i);
+
+            // 'type' can be 'link' or 'text' so far.
+            if (cell_info["type"] == 'link') {
+                new_link = document.createElement("a");
+                new_link.innerHTML = cell_info['inner_text']
+
+                if ('cursor' in cell_info) {
+                    new_link.style.cursor = cell_info['cursor'];
+                } else {
+                    new_link.style.cursor = "pointer";
+                }
+                if ('textDecoration' in cell_info) {
+                    new_link.style.textDecoration = cell_info['textDecoration'];
+                } else {
+                    new_link.style.textDecoration = "underline";
+                }
+                new_link.id = cell_info['id'];
+                if ('color' in cell_info) {
+                    new_link.style.color = cell_info['color'];
+                }
+                if ('func' in cell_info){
+                    if (!('func_params' in cell_info)) {
+                        throw_str = 'If func is key in cell_info, then func_params'
+                        throw_str.concat(' must also be a key.')
+                        throw throw_str;
+                    }
+                    new_link.onclick = function() {
+                        cell_info['func'](cell_info['func_params'])
+                    }
+                }
+                if ('href' in cell_info) {
+                    new_link.href = cell_info['href'];
+                }
+
+                c_cell.appendChild(new_link);
+            } else if (cell_info["type"] == 'text') {
+                text_tag = document.createElement(cell_info['text_tag']);
+                text_tag.innerHTML = cell_info['inner_text'];
+                text_tag.id = cell_info['id'];
+                if ('textDecoration' in cell_info) {
+                    text_tag.style.textDecoration = cell_info['textDecoration'];
+                } 
+                if ('color' in cell_info) {
+                    text_tag.style.color = cell_info['color'];
+                }
+                c_cell.appendChild(text_tag);
+            } else {
+                throw "cell info must be 'type' or 'text'"
+            }
+            row.insertCell(i)
+        }
+    }
+}
 
