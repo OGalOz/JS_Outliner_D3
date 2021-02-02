@@ -141,19 +141,15 @@ function makeDashedLine(d3svg, start_coordinates, end_coordinates,
     /*
      * In order to draw a dashed line we need
      *      the slope of the line
-     * Args:
-     *  d3svg: The d3 svg object
-     *  start/end_coordinates: list<Num, Num> (x,y)
-     *  dash_length, break_length, stroke_width: Num
-     *  color: str
      *
-     * Returns dashed line object
+     *
+     *
      */
         
         let stroke_break_str = dash_length.toString() + ", " + 
                                 break_length.toString();
         
-      let a =  d3svg.append("line")
+        d3svg.append("line")
         .attr('x1', start_coordinates[0])
         .attr('y1', start_coordinates[1])
         .attr('x2', end_coordinates[0])
@@ -162,7 +158,6 @@ function makeDashedLine(d3svg, start_coordinates, end_coordinates,
         .attr("stroke-width", stroke_width)
         .style("stroke-dasharray", (stroke_break_str));  
         // ^ This line here!!
-    return a
 
 }
 
@@ -374,6 +369,68 @@ function addTickAndLabel(d3svg, axis_type, tick_info, tick_axis_loc,
 
 
 
+function makeLine(d3svg, color, x1, y1, x2, y2, stroke_width, id = null ) {
+    /*
+     * Args: 
+     *  d3svg: A d3 svg object
+     *  color: str, like "black"
+     *  x1 - y2, Numbers
+     *  stroke_width: width of line, Number
+     *
+     * Note: We need to make sure the numbers are relatively close to integers
+     */
+
+     return d3svg.append('line')
+         .attr('id', id)
+         .attr('x1', x1.toFixed(2))
+         .attr('y1', y1.toFixed(2))
+         .attr('x2', x2.toFixed(2))
+         .attr('y2', y2.toFixed(2))
+         .attr('stroke', color)
+         .attr('stroke-width', stroke_width)
+         .attr('position', 'absolute')
+         ;
+
+}
+
+
+function makeText(d3svg, font_weight, font_size, x, y, text_str, font_color, id_txt=null) {
+    /*
+     *  Args:
+     *  
+     *      d3svg: A d3 svg object
+     *      font_weight: (str) like "bold", "normal",
+     *      font_size, x, y: Number
+     *      text_str: (str) Text you want to make
+     *
+     */
+    if (font_color == null) {
+        font_color = "black"
+    }
+    if (text_str == null) {
+        text_str = "Default Text"
+    }
+
+    if (id_txt == null) {
+        d3svg.append('text')
+            .attr('font-weight', font_weight)
+            .attr('font-size', font_size)
+            .attr('fill', font_color)
+            .attr('x', x)
+            .attr('y', y)
+            .text(text_str);
+    } else {
+         d3svg.append('text')
+            .attr('font-weight', font_weight)
+            .attr('font-size', font_size)
+            .attr('fill', font_color)
+            .attr('x', x)
+            .attr('y', y)
+            .attr('id', id_txt) 
+            .text(text_str);
+    }
+
+}
 
 
 function GetProperTicks(start_val, end_val) {
@@ -598,12 +655,11 @@ function addManyPointsToPlot(d3svg,
                             point_radius,
                             async=false,
                             quadrant_coloration=null,
+                            point_contains_data=false,
+                            point_click_function=null,
                             point_opacity=0.25,
                             point_color="black",
-                            point_shape="circle",
-                            point_contains_data=false,
-                            onclick_function=null,
-                            on_hover_function=null
+                            point_shape="circle"
                             ) {
     /*
      * This function simultaneously adds multiple points
@@ -627,7 +683,7 @@ function addManyPointsToPlot(d3svg,
      *      'q2' -> q2 color, ... etc
      *  point_opacity: (Num)
      *
-     * onclick_function: (javascript function)
+     * point_click_function: (javascript function)
      * point_contains_data: boolean if point has data at 3rd index
      *
      *
@@ -673,11 +729,11 @@ function addManyPointsToPlot(d3svg,
                  })
                 .attr('opacity', point_opacity)
                 .on('click', function(d) {
-                    if (onclick_function != null) {
+                    if (point_click_function != null) {
                         if (point_contains_data) {
-                            onclick_function(d[2])
+                            point_click_function(d[2])
                         } else {
-                            return onclick_function(d)
+                            return point_click_function(d)
                         }
                     }
                 }); 
@@ -695,93 +751,15 @@ function addManyPointsToPlot(d3svg,
 }
                             
 
-function makeLine(d3svg, color, x1, y1, x2, y2, stroke_width, id = null,
-                  onclick_info=null, onhover_info=null) {
-    /*
-     * Args: 
-     *  d3svg: A d3 svg object
-     *  color: str, like "black"
-     *  x1 - y2, Numbers
-     *  stroke_width: width of line, Number
-     *
-     *  onclick_info: object that contains onclick event
-     *              and onclick function
-     *
-     *  onhover_info: object that contains 
-     *              mouseover & mouseout events
-     *
-     * Note: We need to make sure the numbers are relatively close to integers
-     *
-     * Returns the d3svg object
-     */
-
-     return d3svg.append('line')
-         .attr('id', id)
-         .attr('x1', x1.toFixed(2))
-         .attr('y1', y1.toFixed(2))
-         .attr('x2', x2.toFixed(2))
-         .attr('y2', y2.toFixed(2))
-         .attr('stroke', color)
-         .attr('stroke-width', stroke_width)
-         .attr('position', 'absolute');
-
-}
-
-
-function makeText(d3svg, font_weight, font_size, x, y, text_str, font_color, 
-                id_txt=null, onclick_info=null, onhover_info=null) {
-    /*
-     *  Args:
-     *  
-     *      d3svg: A d3 svg object
-     *      font_weight: (str) like "bold", "normal",
-     *      font_size, x, y: Number
-     *      text_str: (str) Text you want to make
-     *
-     *
-     *  Returns:
-     *      a: the d3 svg object
-     *
-     */
-    if (font_color == null) {
-        font_color = "black"
-    }
-    if (text_str == null) {
-        text_str = "Default Text"
-    }
-
-    let a = null
-    if (id_txt == null) {
-        a = d3svg.append('text')
-            .attr('font-weight', font_weight)
-            .attr('font-size', font_size)
-            .attr('fill', font_color)
-            .attr('x', x)
-            .attr('y', y)
-            .text(text_str);
-    } else {
-        a = d3svg.append('text')
-            .attr('font-weight', font_weight)
-            .attr('font-size', font_size)
-            .attr('fill', font_color)
-            .attr('x', x)
-            .attr('y', y)
-            .attr('id', id_txt) 
-            .text(text_str);
-    }
-    return a
-}
 
 function addSinglePointToPlot(d3svg,
                         point_coordinates, 
+                        point_color,
+                        point_shape,
                         point_radius,
-                        point_opacity=0.25,
-                        point_color="black",
-                        point_shape="circle",
-                        point_contains_data=false,
-                        onclick_function=null,
-                        on_hover_function=null
-                        ) {
+                        point_opacity,
+                        point_data,
+                        point_click_function) {
     /*
      * d3svg: d3 svg object
      * point_coordinates: [x (Num), y (Num)]
@@ -790,16 +768,13 @@ function addSinglePointToPlot(d3svg,
      * point_radius: (Num) distance from center to corner
      * point_opacity: (Num)
      * point_data: list<>
-     * onclick_function: function
+     * point_click_function: function
      *
-     *  Returns:
-     *      a: the d3 svg object
      */
 
-    let a = null
    if (point_shape == "circle") {
        if (point_data.length > 0) {
-        a = d3svg.append("circle")
+        d3svg.append("circle")
         .attr("cx", point_coordinates[0])
         .attr("cy", point_coordinates[1])
         .attr("r", point_radius)
@@ -807,7 +782,7 @@ function addSinglePointToPlot(d3svg,
         .attr("opacity", point_opacity)
         .data(point_data)
         .on("click", function(d) {
-            onclick_function(d); 
+            point_click_function(d); 
         });} else {
             d3svg.append("circle")
             .attr("cx", point_coordinates[0])
@@ -819,7 +794,6 @@ function addSinglePointToPlot(d3svg,
    } else {
        throw "No code written for adding rects or triangles yet"
    }
-    return a 
         
 }
 
@@ -827,29 +801,14 @@ function addSinglePointToPlot(d3svg,
 
 function addArc(d3svg, start_angle, end_angle, center_coordinates, 
                   inner_radius, outer_radius, internal_color = "black", 
-                  id = null, onclick_obj=null, on_hover_obj=null,
-                  DOM_data_obj=null, debug=false) {
+                  id = null, debug=true) {
     /* Args:
      *      d3svg: d3 svg object 
      *      start_angle, end_angle, radius, line_width: Num
      *      center_coordinates: <Num, Num>
      *      internal_color, id: str
-     *      onclick_obj: Object
-     *          inp: (input) not set
-     *          func: The function that runs on the inp
-     *      on_hover_obj: Object
-     *          func_over: The function that runs on the inp
-     *          inp_over: input to func mouse over
-     *          func_out: The function that runs on the inp
-     *          inp_out: input to func mouse out
-     *      DOM_data_obj: Object
-     *          This contains keys to values which will be added to DOM
-     *          in the form attribute: 'data-' + key: value
      *      
      *      Note, this can make semi circle if start & end are Pi away
-     *
-     *  Returns:
-     *      a: the d3 svg object
      */ 
 
     let tsl_str = center_coordinates[0].toString() + ',' + center_coordinates[1].toString()
@@ -868,31 +827,11 @@ function addArc(d3svg, start_angle, end_angle, center_coordinates,
 
     console.log(arcGenerator)
 
-    let a = d3svg.append('path')
+    d3svg.append('path')
         .attr('id', id)
         .attr('transform', 'translate(' + tsl_str + ')')
         .attr('fill', internal_color)
         .attr('d', arcGenerator())
-    
-    if (!(onclick_obj == null)) {
-        a.on('click', function() {
-            onclick_obj['func'](onclick_obj['inp'])
-        })
-    }
-    if (!(on_hover_obj == null)) {
-        a.on('mouseover', function() {
-            on_hover_obj['func_over'](on_hover_obj["inp_over"])}) 
-        a.on('mouseout', function() {
-            on_hover_obj['func_out'](on_hover_obj["inp_out"])})
-    }
-
-    if (!(DOM_data_obj == null)) {
-        for (k of Object.keys(DOM_data_obj)) {
-            a.attr('data-' + k.toString(), DOM_data_obj[k].toString())
-        }
-    }
-
-    return a
 
 }
 
@@ -906,9 +845,6 @@ function addPartialcircle(d3svg, start_angle, end_angle,
      *      internal_color, id: str
      *      
      *      Note, this can make semi circle if start & end are Pi away
-     *
-     *  Returns:
-     *      a: the d3 svg object
      */ 
 
     let tsl_str = center_coordinates[0].toString() + ',' + center_coordinates[1].toString()
@@ -918,19 +854,16 @@ function addPartialcircle(d3svg, start_angle, end_angle,
                          .startAngle(start_angle)
                          .endAngle(end_angle);
 
-    let a = d3svg.append('path')
+    d3svg.append('path')
         .attr('id', id)
         .attr('transform', 'translate(' + tsl_str + ')')
         .attr('fill', internal_color)
         .attr('d', arcGenerator())
 
-    return a
-
 }
 
 function addPolygon(d3svg, path_coordinates, fill_color, id = null,
-                    onclick_obj=null, ondrag_obj=null, 
-                    border_color_info=null) {
+                    onclick_obj=null, ondrag_obj=null) {
     /*
      *
      * path_coordinates: list<coordinate>
@@ -944,82 +877,40 @@ function addPolygon(d3svg, path_coordinates, fill_color, id = null,
      *      ondrag_func: javascript function
      *      ondrag_params: list<>
      *
-     * border_color_info: object
-     *      color: str
-     *      width: Num
-     *      [stroke-opacity]: Num
-     *
-     *
-     * Returns:
-     *  list<a,b>
-     *      Where a and b are d3 svg objects
      */
     
     let points_str = ""
     for (let coord of path_coordinates) {
         points_str += coord.join(",") + " "
     }
-    let a = d3svg.append("polygon")
+    let x = d3svg.append("polygon")
          .attr('id', id)
          .attr('fill', fill_color)
          .attr('points', points_str)
 
     if (!(onclick_obj == null)) {
-        a.on('click', function() {
+        x.on('click', function() {
             onclick_obj['onclick_func'](onclick_obj['onclick_params'])
         })
     }
 
     if (!(ondrag_obj == null)) {
-        a.call(d3.drag().on("start", ondrag_obj['ondrag_func']))
+        x.call(d3.drag().on("start", ondrag_obj['ondrag_func']))
     }
-
-    let b = null
-    if (!(border_color_info == null)) {
-       b =  d3svg.append("polygon")
-         .attr('id', id)
-         .attr('stroke', border_color_info["color"])
-         .attr('stroke-width', border_color_info["width"])
-         .attr('fill', "none")
-         .attr('points', points_str);
-        
-        if ("stroke_opacity" in border_color_info) {
-            b.attr('stroke-opacity', border_color_info["stroke_opacity"])
-        }
-    }
-
-    return [a, b]
-
-        
+         
+    /*
+    const {} = {}.insert('polygon')\n".format(const_str, js_feat['svg_name'])
+    js_str += ".attr('id', '{}')\n".format(js_feat['html_id'] + "-in")
+    js_str += ".attr('fill', '{}')\n".format(js_feat["internal_color"])
+    points_str = "{},{} {},{} {},{} ".format(
+        str(a[0]),str(a[1]),str(b[0]),str(b[1]),
+        str(c[0]),str(c[1]))
+    js_str += ".attr('points', '{}');\n\n".format(points_str)
+    */
 
 }
        
 
-function addDomDataTod3SVGObject(d3_svg_obj, DOM_data_obj) {
-    /* This function adds data attributes like 'data-number'
-     *   to the DOM object d3_svg_obj, using the keys in 
-     *   DOM_data_obj. NOTE: DO NOT ADD 'data-' to the beginning
-     *   of the  DOM_data_obj keys, that is added within function.
-     *
-     *   Args:
-     *      d3_svg_obj: A shape of sorts on the svg created by d3
-     *      DOM_data_obj: object
-     *          data_key (str) -> data_value
-     *
-     *  Returns:
-     *      d3_svg_obj
-     *
-     *
-     *
-     */
 
-    if (!(DOM_data_obj == null)) {
-        for (k of Object.keys(DOM_data_obj)) {
-            d3_svg_obj.attr('data-' + k.toString(), DOM_data_obj[k].toString())
-        }
-    }
-
-    return d3_svg_obj
-}
 
 
